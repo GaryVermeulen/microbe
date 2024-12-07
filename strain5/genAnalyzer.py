@@ -7,8 +7,6 @@ import os
 import pickle
 import shutil
 
-#from genMutator import mutate
-
 def getFile(f):
     fileLines = []
 
@@ -36,8 +34,6 @@ if __name__ == "__main__":
 
     for f in fileList:
         if f[-7:] == "Log.txt":
-            #print('-----')
-            #print(f)
 
             contents = getFile(f)
 
@@ -47,24 +43,22 @@ if __name__ == "__main__":
             listOfLines = []
             reducedLines = []
             for l in contents:
-                #print(l)
+
                 lineList = l.split(',')
                 
                 if lineList[-1] == "True":
-                    #print("TRUE")
+
                     isTrue += 1
                 else:
-                    #print("FALSE")
+
                     isFalse += 1
 
                 # Running % of True
-                X = lineList[4]
+                X = lineList[5]
                 Y = isTrue
                 P = (int(Y) / int(X)) * 100
 
                 lineList.append(round(P))
-
-                #print(lineList)
 
                 listOfLines.append(lineList)
 
@@ -73,9 +67,6 @@ if __name__ == "__main__":
     print('---------')
     print(len(files))
 
-   # print(files[-1][0])
-    #print(files[-1][1][-1])
-
     # Save this gen's log files
     print('Saving this generation\'s logs to pickle...')
     with open("logs.p", "wb") as f:
@@ -83,15 +74,10 @@ if __name__ == "__main__":
     f.close()
         
     print('Pickle saved.')
-
     print('---------')
 
     for f in files:
-        #print(f[0])
-        #print(f[1][-1])
         filesBrief.append((f[0], f[1][-1]))
-        #for l in f[1]:
-        #    print(l)
 
 
     print('---------')

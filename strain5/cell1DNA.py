@@ -1,6 +1,9 @@
 # cell1DNA.py
 #
 
+#/TTL
+ttl = 120 # Seconds
+#/ENDTTL
 #/STARTNUM
 startNum = 1
 #/ENDSTARTNUM
@@ -28,7 +31,7 @@ def cellFunction(newNum):
 # Prime number function
 #
 def isNumPrime1(num):
-    print("isNumPrime1: num: ", num)
+    #print("isNumPrime1: num: ", num)
     retValue = False
     # Negative numbers, 0 and 1 are not primes
     if num > 1:
@@ -37,12 +40,12 @@ def isNumPrime1(num):
             # If num is divisible by any number between
             # 2 and n / 2, it is not prime
             if (num % i) == 0:
-                print(num, "is not a prime number")
+                #print(num, "is not a prime number")
                 break
         else:
-            print(num, "is a prime number")
+            #print(num, "is a prime number")
             retValue = True
-    else:
-        print(num, "is not a prime number")
+    #else:
+    #    print(num, "is not a prime number")
 
     return retValue

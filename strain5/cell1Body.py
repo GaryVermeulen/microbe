@@ -68,7 +68,7 @@ def getLastFile():
     return parent, lastFile, lastDNA
 
 
-def setNextFile(lastFile, lastDNA):
+def setNextFile(baseFile, lastFile, lastDNA):
     
     # Extract the number from the file name
     bx = [i for i in range(len(lastFile)) if lastFile.startswith("B", i)]
@@ -87,7 +87,7 @@ def setNextFile(lastFile, lastDNA):
     newDNA = head + str(nextNum) + "DNA.py"
 
     # Append to file
-    fileEntry = lastFile + "," + newFile + "," + newDNA + "\n"
+    fileEntry = baseFile + "," + newFile + "," + newDNA + "\n"
 
     filer = open("fileList.txt", "a")
     filer.writelines(fileEntry)
@@ -197,12 +197,44 @@ def mutateDNAFileStartNum(newDNA):
     return
 
 
-def replicate(ppid, dnaFile):
+def mutateDNAFileTTL(newDNA):
+
+    file = readDNAFile(newDNA)
+
+    random_int = random.randint(120, 180)
+    
+    newCode = ['ttl = ' + str(random_int)]
+
+    found = False
+    newFile = []
+    for i in range(len(file)):
+        if file[i].strip() == "#/TTL":
+            #print("FOUND: ", file[i])
+            newFile.append(file[i])
+            for j in newCode:
+                newFile.append(j)
+            found = True
+        else:
+            #print("NF: ", file[i])
+            if found:
+                found = False
+                continue
+            newFile.append(file[i])
+
+    with open(newDNA, "w") as outFile:
+        for l in newFile:
+            outFile.write(l + "\n")
+    outFile.close()
+
+    return
+
+
+def replicate(baseFile, dnaFile):
     print("-----")
     print("replicate:")
 
     parent, lastFile, lastDNA = getLastFile()
-    newFile, newDNA = setNextFile(lastFile, lastDNA)
+    newFile, newDNA = setNextFile(baseFile, lastFile, lastDNA)
         
     # Create file (replicant)
     shutil.copyfile(lastFile, newFile)
@@ -213,7 +245,7 @@ def replicate(ppid, dnaFile):
     
     # Mutate DNA?
     # Mutate which part?
-    # 0 - no mutation
+    # 0 - mutate ttl
     # 1 - mutate startNum
     # 2 - mutate sleepTime
     # 3 - mutate cell function (code)
@@ -231,7 +263,11 @@ def replicate(ppid, dnaFile):
     elif random_int == 1:
         # Mutate startNum
         print("*** Mutating startNum: ", newDNA)
-        mutateDNAFileStartNum(newDNA)        
+        mutateDNAFileStartNum(newDNA)
+    elif random_int == 0:
+        # Mutate ttl
+        print("*** Mutating ttl: ", newDNA)
+        mutateDNAFileStartNum(newDNA)
     else:
         print("No mutation.")
     
@@ -261,7 +297,7 @@ if __name__ == "__main__":
     baseFile = baseFile[1:]
     
     start_time = time.time()
-    end_time = start_time + 120  # 2 minutes
+    #end_time = start_time + 120  # 2 minutes
 
     print("--- START CELL INSTANCE ---")
     print("whoami: ", whoami)
@@ -298,11 +334,13 @@ if __name__ == "__main__":
     print("----------")
     
     # Starting point
+    ttl             = dna.ttl
     MAXPOP          = dna.MAXPOP
     stopReplication = dna.stopReplication
     startNum        = dna.startNum
     sleepTime       = dna.sleepTime
     currentNum = startNum
+    end_time = start_time + ttl
           
     while time.time() < end_time:
         print("----------")
@@ -322,14 +360,14 @@ if __name__ == "__main__":
                     random_coin = random.randint(0, 1)
                     if random_coin == 1:
                         print("Won 100 50/50 coin toss, Replicate. ", random_coin)
-                        replicate(whoami, dnaFile)
+                        replicate(baseFile, dnaFile)
                     else:
                         print("Lost 100 50/50 coin toss, no replication. ", random_coin)
                 else:
                     print("Replicating randomly at: ", random_int)
-                    replicate(whoami, dnaFile)
-            else:
-                print("Random int - else: ", random_int)
+                    replicate(baseFile, dnaFile)
+            #else:
+            #    print("Random int - else: ", random_int)
         else:
             print("Max Population (-5) Exceeded, no further replications: " + str(population))
             
@@ -352,13 +390,13 @@ if __name__ == "__main__":
         # Principal cell functions
         isPrime = dna.isNumPrime1(currentNum) # CurrentNum prime?        
 
-        print('Running: parent: {}, baseFile: {}, sleepTime: {}, DNA: {}, loopCnt: {}, startNum: {}, currentNum: {}, isPrime: {}'.format(
-            parent, baseFile, sleepTime, dnaFile, loopCnt, startNum, currentNum, isPrime))
+        print('Running: parent: {}, ttl: {}, baseFile: {}, sleepTime: {}, DNA: {}, loopCnt: {}, startNum: {}, currentNum: {}, isPrime: {}'.format(
+            parent, ttl, baseFile, sleepTime, dnaFile, loopCnt, startNum, currentNum, isPrime))
 
         # Write to log file
         #  pid, ppid, DNA, loopCnt, startNum, currentNum, isPrime
-        writeLog(parent + ',' + baseFile + ',' + str(sleepTime) + ',' + str(dnaFile) + ',' + str(loopCnt) +
-                 ',' + str(startNum)+ ',' +str(currentNum) + ',' + str(isPrime) + '\n')
+        writeLog(parent + ',' + str(ttl) + ',' + baseFile + ',' + str(sleepTime) + ',' + str(dnaFile) + ',' +
+                 str(loopCnt) + ',' + str(startNum) + ',' + str(currentNum) + ',' + str(isPrime) + '\n')
 
         # Execute cell function...
         currentNum = dna.cellFunction(currentNum) 
