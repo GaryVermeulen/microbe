@@ -1,1 +1,1 @@
-Cellular emulation/modeling (silicon not biologic).
+Cellular emulation/modeling.
