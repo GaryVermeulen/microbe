@@ -1,5 +1,5 @@
 Cellular emulation/modeling.
   
-  string5 - POC/mechanics
+  strain5 - POC/mechanics
   
-  string6 - Introduces data/food consumption
+  strain6 - Introduces data/food consumption
