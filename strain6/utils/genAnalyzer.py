@@ -10,8 +10,6 @@ import shutil
 def getFile(f):
     fileLines = []
 
-    
-
     with open('../' + f, 'r') as inFile:
         for line in inFile:
             fileLines.append(line.strip("\n"))
