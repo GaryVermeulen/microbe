@@ -7,7 +7,7 @@ import pickle
 ttl = 120 # Seconds
 #/ENDTTL
 #/STARTNUM
-##startNum = 1
+startNum = 1
 #/ENDSTARTNUM
 #/SLEEPTIME
 sleepTime = 1

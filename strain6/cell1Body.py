@@ -133,10 +133,12 @@ def mutateDNAFileSleepTime(newDNA):
 
     random_int = random.randint(0, 3)
 
-    if random_int == 3:
-        sleepTime = 2.5
-    else:
-        sleepTime = random_int
+    #if random_int == 3:
+    #    sleepTime = 2.5
+    #else:
+    #    sleepTime = random_int
+
+    sleepTime = random_int
     
     newCode = ['sleepTime = ' + str(sleepTime)]
 
@@ -244,17 +246,18 @@ def replicate(baseFile, dnaFile):
     
     # Mutate DNA?
     # Mutate which part?
-    # 3 - mutate cell function (code)
+    # Not usewd at this time - 3 - mutate cell function (code)
     # 2 - mutate sleepTime
     # 1 - mutate ttl
     #
-    random_int = random.randint(0, 3)
+    random_int = random.randint(0, 2)
     
-    if random_int == 3:
+    #if random_int == 3:
         # Mutate code
-        print("*** Mutating Code: ", newDNA)
-        mutateDNAFileCode(newDNA)
-    elif random_int == 2:
+        #print("*** Mutating Code: ", newDNA)
+        #mutateDNAFileCode(newDNA)
+    #elif random_int == 2:
+    if random_int == 2:
         # Mutate sleepTime
         print("*** Mutating sleepTime: ", newDNA)
         mutateDNAFileSleepTime(newDNA)
