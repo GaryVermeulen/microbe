@@ -284,6 +284,7 @@ if __name__ == "__main__":
 
     currentNum = 0
     loopCnt = 1
+    P = 0
     
     #basePath = "/home/gary/src/petri_dish/strain3"
     testChar = "/"
@@ -335,6 +336,7 @@ if __name__ == "__main__":
     stopReplication = dna.stopReplication
     #startNum        = dna.startNum
     sleepTime       = dna.sleepTime
+    isPrimeTotal    = dna.isPrimeTotal
     #currentNum = startNum
     end_time = start_time + ttl
           
@@ -386,7 +388,25 @@ if __name__ == "__main__":
         #isPrime = dna.isNumPrime1(currentNum) # CurrentNum prime?
 
         # Food consumption
-        thisFood, isPrime = dna.eatFood(loopCnt)
+        # Give 10 tries before moving to greener pastures
+        if loopCnt <= 10:
+            print("Primary data/food. <=10")
+            thisFood, isPrime = dna.eatFood(loopCnt)
+        else:
+            if P < 50:
+                print("*** Prime data/food.")
+                thisFood, isPrime = dna.eatFoodP(loopCnt)
+            else:
+                print("Primary data/food.")
+                thisFood, isPrime = dna.eatFood(loopCnt)
+
+        if isPrime:
+            isPrimeTotal += 1
+        P = (isPrimeTotal / loopCnt) * 100
+        print("isPrimeTotal: ", isPrimeTotal)
+        print("loopCnt: ", loopCnt)
+        print("P: ", P)
+        
 
         print('Running: parent: {}, ttl: {}, baseFile: {}, sleepTime: {}, DNA: {}, loopCnt: {}, thisFood: {}, isPrime: {}'.format(
             parent, ttl, baseFile, sleepTime, dnaFile, loopCnt, thisFood, isPrime))

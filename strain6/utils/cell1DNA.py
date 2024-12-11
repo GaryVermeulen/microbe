@@ -83,31 +83,3 @@ def eatFood2(loopCnt):
     isPrime = isNumPrime1(thisFood)
     
     return thisFood, isPrime
-
-
-def eatFood3(loopCnt):
-
-    # Get data/food
-    with open('pickles/dataFood3.p', 'rb') as f:
-        dataFood = pickle.load(f)
-    f.close()
-
-    thisFood = dataFood[loopCnt]
-
-    isPrime = isNumPrime1(thisFood)
-    
-    return thisFood, isPrime
-
-
-def eatFoodP(loopCnt):
-
-    # Get data/food
-    with open('pickles/dataFoodP.p', 'rb') as f:
-        dataFood = pickle.load(f)
-    f.close()
-
-    thisFood = dataFood[loopCnt]
-
-    isPrime = isNumPrime1(thisFood)
-    
-    return thisFood, isPrime
