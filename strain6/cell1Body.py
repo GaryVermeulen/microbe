@@ -12,9 +12,6 @@ import importlib
 from subprocess import call
 
 
-#pid = os.getpid()
-#ppid = 0
-
 def writeLog(fInput):
 
     whoami = __file__
@@ -127,18 +124,11 @@ def mutateDNAFileCode(newDNA):
 
 def mutateDNAFileSleepTime(newDNA):
 
-    sleepTime = 0
+    sleepTime = 1 # Need atleast 1 second due to file operations
 
     file = readDNAFile(newDNA)
 
-    random_int = random.randint(0, 3)
-
-    #if random_int == 3:
-    #    sleepTime = 2.5
-    #else:
-    #    sleepTime = random_int
-
-    sleepTime = random_int
+    sleepTime = random.randint(1, 3)
     
     newCode = ['sleepTime = ' + str(sleepTime)]
 
@@ -252,11 +242,6 @@ def replicate(baseFile, dnaFile):
     #
     random_int = random.randint(0, 2)
     
-    #if random_int == 3:
-        # Mutate code
-        #print("*** Mutating Code: ", newDNA)
-        #mutateDNAFileCode(newDNA)
-    #elif random_int == 2:
     if random_int == 2:
         # Mutate sleepTime
         print("*** Mutating sleepTime: ", newDNA)
@@ -325,18 +310,19 @@ if __name__ == "__main__":
 
     dna = importlib.import_module(dnaModule)
     
-    # cellFunction.py modified time
+    # cellnDNA.py modified time
     mTimeStart = os.path.getmtime(dnaFile)
     print("{} modified time: {}".format(dnaFile, mTimeStart))
     print("----------")
     
     # Starting point
+    foodObj         = dna.Food()
     ttl             = dna.ttl
     MAXPOP          = dna.MAXPOP
     stopReplication = dna.stopReplication
     #startNum        = dna.startNum
     sleepTime       = dna.sleepTime
-    isPrimeTotal    = dna.isPrimeTotal
+    isPrimeTotal    = foodObj.isPrimeTotal #dna.isPrimeTotal
     #currentNum = startNum
     end_time = start_time + ttl
           
@@ -350,11 +336,10 @@ if __name__ == "__main__":
         else:
             population = len([f for f in os.listdir(basePath) if os.path.isfile(os.path.join(basePath, f))])
             
-        if population < (MAXPOP - 5):
-        
+        if population < (MAXPOP - 5):        
             # Trying self-replication (typical max loop count is 120)
             random_int = random.randint(1, 120)
-            # With sleepTime < 1 many more loops
+            # With sleepTime = 0 many more loops
             if (random_int == loopCnt) or (loopCnt % 100 == 0): #(loopCnt == 100): # One free pass at 100
                 if (loopCnt % 100 == 0): #(loopCnt == 100): # Reduce odds with "coin flip"
                     random_coin = random.randint(0, 1)
@@ -366,8 +351,6 @@ if __name__ == "__main__":
                 else:
                     print("Replicating randomly at: ", random_int)
                     replicate(baseFile, dnaFile)
-            #else:
-            #    print("Random int - else: ", random_int)
         else:
             print("Max Population (-5) Exceeded, no further replications: " + str(population))
             
@@ -385,48 +368,30 @@ if __name__ == "__main__":
             mTimeStart = mTimeNow
          
         # Principal cell functions
-        #isPrime = dna.isNumPrime1(currentNum) # CurrentNum prime?
-
-        # Food consumption
-        # Give 10 tries before moving to greener pastures
-        if loopCnt <= 10:
-            print("Primary data/food. <=10")
-            thisFood, isPrime = dna.eatFood(loopCnt)
-        else:
-            if P < 50:
-                print("*** Prime data/food.")
-                thisFood, isPrime = dna.eatFoodP(loopCnt)
-            else:
-                print("Primary data/food.")
-                thisFood, isPrime = dna.eatFood(loopCnt)
-
-        if isPrime:
-            isPrimeTotal += 1
-        P = (isPrimeTotal / loopCnt) * 100
-        print("isPrimeTotal: ", isPrimeTotal)
-        print("loopCnt: ", loopCnt)
-        print("P: ", P)
+        #
+        # Currently: metabolize via Food class
+        #
+        foodObj.printAll()
+        print('---')
+        foodObj.metabolize(loopCnt)
+        print('---')
+        foodObj.printAll()
         
 
         print('Running: parent: {}, ttl: {}, baseFile: {}, sleepTime: {}, DNA: {}, loopCnt: {}, thisFood: {}, isPrime: {}'.format(
-            parent, ttl, baseFile, sleepTime, dnaFile, loopCnt, thisFood, isPrime))
+            parent, ttl, baseFile, sleepTime, dnaFile, loopCnt, foodObj.thisFood, foodObj.isPrime))
 
         # Write to log file
-        #  pid, ppid, DNA, loopCnt, isPrime
+        #  parent, TTL, baseFile, sleepTime, dnaFile, loopCnt, foodObj.thisFood, foodObj.isPrime
         writeLog(parent + ',' + str(ttl) + ',' + baseFile + ',' + str(sleepTime) + ',' + str(dnaFile) + ',' +
-                 str(loopCnt) + ',' + str(thisFood) + ',' + str(isPrime) + '\n')
+                 str(loopCnt) + ',' + str(foodObj.thisFood) + ',' + str(foodObj.isPrime) + '\n')
 
-        # Execute cell function...
-        # Original
-        #currentNum = dna.cellFunction(currentNum)
-        
-        
         time.sleep(sleepTime) # Small delay to reduce excessive CPU usage
 
         loopCnt += 1
 
         # Over population?
-        #directory = "/home/gary/src/petri_dish/replicants"
+        #
         population = len([f for f in os.listdir(basePath) if os.path.isfile(os.path.join(basePath, f))])
         if population > MAXPOP:
             sys.exit("Max Population Exceeded: " + str(population))

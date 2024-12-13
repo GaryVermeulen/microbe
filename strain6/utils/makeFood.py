@@ -5,7 +5,20 @@
 
 import random
 import pickle
-import cell1DNA as dna
+
+
+def isNumPrime(num):
+
+    retValue = False
+
+    if num > 1:
+        for i in range(2, (num//2)+1):
+            if (num % i) == 0:
+                break
+        else:
+            retValue = True
+    
+    return retValue
 
 
 if __name__ == "__main__":
@@ -20,7 +33,7 @@ if __name__ == "__main__":
         random_int = random.randint(start, stop)
         foodList.append(random_int)
 
-        isPrime = dna.isNumPrime1(random_int)
+        isPrime = isNumPrime(random_int)
 
         if isPrime:
             totalPrime += 1
@@ -28,8 +41,6 @@ if __name__ == "__main__":
     P = (totalPrime / stop) * 100
     print("First data/food P% ", P)
     
-    
-
     #for n in foodList:
     #    print(n)
 
@@ -48,7 +59,7 @@ if __name__ == "__main__":
         random_int = random.randint(start, randStop)
         foodList.append(random_int)
 
-        isPrime = dna.isNumPrime1(random_int)
+        isPrime = isNumPrime(random_int)
 
         if isPrime:
             totalPrime += 1
@@ -73,7 +84,7 @@ if __name__ == "__main__":
         random_int = random.randint(start, randStop)
         foodList.append(random_int)
 
-        isPrime = dna.isNumPrime1(random_int)
+        isPrime = isNumPrime(random_int)
 
         if isPrime:
             totalPrime += 1
@@ -132,16 +143,20 @@ if __name__ == "__main__":
                  3581, 3583, 3593, 3607, 3613, 3617, 3623, 3631, 3637, 3643, 3659, 3671, 3673, 3677,
                  3691, 3697, 3701, 3709, 3719, 3727, 3733, 3739, 3761, 3767, 3769, 3779, 3793, 3797,
                  3803, 3821, 3823, 3833, 3847, 3851, 3853, 3863, 3877, 3881, 3889, 3907, 3911, 3917,
-                 3919, 3923, 3929, 3931, 3943]	
-                 
-                 
+                 3919, 3923, 3929, 3931, 3943]	         
                  
     random.shuffle(primeList)
     
     print("len primeList: ", len(primeList))
     
-    #for n in foodList:
-    #    print(n)
+    # Just for fun
+    for n in primeList:
+        isPrime = isNumPrime(n)
+
+        if isPrime:
+            totalPrime += 1
+    P = (totalPrime / len(primeList)) * 100
+    print("Prime data/food P% ", P)
 
     # Save differnet food
     print('Saving all prime data/food to pickle...')
