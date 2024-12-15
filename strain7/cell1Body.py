@@ -121,7 +121,7 @@ def replicate(baseFile, dnaFile, foodObj):
     # Create matching DNA file
     shutil.copyfile(lastDNA, newDNA)
     
-    # Mutate DNA?
+    # Mutate child DNA?
     #
     """
     New mutation to be based on the % of primes found...

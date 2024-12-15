@@ -48,7 +48,7 @@ if __name__ == "__main__":
             for l in contents:
 
                 lineList = l.split(',')
-                
+                """
                 if lineList[-1] == "True":
 
                     isTrue += 1
@@ -62,7 +62,7 @@ if __name__ == "__main__":
                 P = (int(Y) / int(X)) * 100
 
                 lineList.append(round(P))
-
+                """
                 listOfLines.append(lineList)
 
             files.append((f, listOfLines))
@@ -89,14 +89,13 @@ if __name__ == "__main__":
     #    print(f)
 
     print('---------')
-    filesBrief.sort()
+    #filesBrief.sort()
 
-    highP = 0
+    filesBrief.sort(key = lambda x: x[-1][-1])
     
     for f in filesBrief:
-        print(f)
-        #print(f[1][-1])
-        if f[1][-1] > highP:
-            highP = f[1][-2]
-
-    print("highP: ", highP)
+        if f[1][-1] == '100.0':
+            print("Keeper: ", f)
+        else:
+            print(f)
+    

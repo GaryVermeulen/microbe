@@ -15,8 +15,7 @@ class Food:
         thisFood = 0,
         isPrime = False,
         runningP = 0,
-        isPrimeTotal = 0,
-        highP = 0.0
+        isPrimeTotal = 0
         ):
 
         self.whichFile = whichFile
@@ -25,7 +24,6 @@ class Food:
         self.isPrime = isPrime
         self.runningP = runningP
         self.isPrimeTotal = isPrimeTotal
-        self.highP = highP
 
     # How instances of the class are serialized and deserialized (pickles)
     def __reduce__(self):
@@ -38,7 +36,6 @@ class Food:
         print('isPrime: ', self.isPrime)
         print('runningP: ', self.runningP)
         print('isPrimeTotal: ', self.isPrimeTotal)
-        print('highP: ', self.highP)
 
     def metabolize(self, loopCnt):
 
@@ -46,7 +43,7 @@ class Food:
 
         self.changeFoodSource()
 
-        print("Primary data/food.")
+        print("whichFile: ", self.whichFile)
         self.thisFood, self.isPrime = eatFood(self.loopCnt, self.whichFile)
         
         if self.isPrime:
@@ -58,53 +55,13 @@ class Food:
     def changeFoodSource(self):
 
         print("Change food source?")
-
-        # Read current log file to see who has the high P%
-        whoami = __file__
-        files = []
-        filesBrief = []
-        testChar = "/"
         
-        res = [i for i in range(len(whoami)) if whoami.startswith(testChar, i)]
-        basePath = whoami[:res[-1]]
-        fileList = os.listdir(basePath)
+        #if self.loopCnt >= 10:
+        #    if self.runningP < 100:
+        #        self.whichFile = self.whichFile + 1
+        #        print("Updated whichFile to: ", self.whichFile)
 
-        #print("len fileList: ", len(fileList))
-
-        for f in fileList:
-            #print("raw f: ", f)
-            if f[-7:] == "Log.txt":
-                #print("f log: ", f)
-                contents = self.getFile(f)
-
-                #print("len contents: ", len(contents))
-           
-                listOfLines = []
-                reducedLines = []
-            
-                for l in contents:
-                    lineList = l.split(',')                
-                    listOfLines.append(lineList)
-
-                files.append((f, listOfLines))
-
-        for f in files:
-            filesBrief.append((f[0], f[1][-1]))
-
-        filesBrief.sort()
-
-        #highP = 0
-
-        print("len filesBrief: ", len(filesBrief))
-        for f in filesBrief:
-            print("f: ", f)
-            print("f[1][-1]: ", f[1][-1])
-            print("self.highP: ", self.highP)
-            self.highP = f[1][-1]
-
-        print("---self.highP: ", self.highP)
-
-        print("Not sure know yet...")
+        print("Not yet...")
 
         return
 
@@ -133,6 +90,8 @@ sleepTime = 1
 # 1 stops replication, but allows existing cells to complete.
 stopReplication = 1
 
+# Typically 30 will not solve
+# Typically 90 will solve
 MAXPOP = 90 # Maximum file (cell) population
 
 # Simple function now obsolete
