@@ -1,0 +1,12 @@
+dataFood1 P% ,17.599999999999998
+dataFood1 list len: ,500
+dataFood2 P% ,23.599999999999998
+dataFood2 list len: ,500
+dataFood3 P% ,34.599999999999994
+dataFood3 list len: ,500
+dataFood4 P% ,43.6
+dataFood4 list len: ,500
+dataFood5 P% ,52.2
+dataFood5 list len: ,500
+dataFoodP P% ,100.0
+dataFoodP list len: ,551
