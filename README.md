@@ -5,4 +5,5 @@ Cellular emulation/modeling.
   strain6 - Introduces data/food consumption
 
   strain7 - Introduces a goal (problem solving)
-  
+
+  strain8 - Refinements and enhancements (WIP)
