@@ -8,10 +8,11 @@ import sys
 import pickle
 import shutil
 
+
 def getFile(f):
     fileLines = []
 
-    with open('../' + f, 'r') as inFile:
+    with open(f, 'r') as inFile:
         for line in inFile:
             fileLines.append(line.strip("\n"))
     inFile.close()
@@ -36,13 +37,14 @@ def showP(filesBrief, P):
     return PP
 
 
-if __name__ == "__main__":
+def analyzeRun():
 
     whoami = __file__
 
     files = []
     filesBrief = []
     keeper = []
+    foundFile = False
 
     testChar = "/"
     res = [i for i in range(len(whoami)) if whoami.startswith(testChar, i)]
@@ -57,7 +59,7 @@ if __name__ == "__main__":
     for f in fileList:
         if f[-7:] == "Log.txt":
 
-            contents = getFile(f)
+            contents = getFile(basePath + "/" + f)
 
             isTrue = 0
             isFalse = 0
@@ -88,7 +90,7 @@ if __name__ == "__main__":
     else:
         # Save this gen's log files
         print('Saving this generation\'s logs to pickle...')
-        with open("../pickles/logs.p", "wb") as f:
+        with open(basePath + "/pickles/logs.p", "wb") as f:
             pickle.dump(files, f)
         f.close()
 
@@ -176,5 +178,13 @@ if __name__ == "__main__":
             for entry in os.listdir(basePath):
                 if os.path.isfile(os.path.join(basePath, entry)):
                     os.remove(basePath + "/" + entry)
+
+
+    return
+
+
+if __name__ == "__main__":
+
+    analyzeRun()
 
     print("FINI.")

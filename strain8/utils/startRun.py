@@ -8,6 +8,7 @@ import shutil
 import psutil
 import datetime 
 from subprocess import call
+from genAnalyzer import analyzeRun
 
 
 
@@ -67,3 +68,9 @@ if __name__ == "__main__":
             time.sleep(10)
 
     print("Run end at: ", datetime.datetime.now())
+
+    ans = input("Analyze Run <Y/n>? ")
+    if ans in ['Y', 'y']:
+        analyzeRun()
+
+    print("FINI.")
