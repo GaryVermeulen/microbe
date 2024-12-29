@@ -18,6 +18,24 @@ def getFile(f):
     return fileLines
 
 
+def showP(filesBrief, P):
+    print("input P: ", P)
+    cntP = 0
+    for f in filesBrief:
+        #print(f)
+        #if (f[2][-1] >= '90.0') and (f[2][-1] <= '99.0'):
+        if (float(f[2][-1]) >= float(P)) and (float(f[2][-1]) <= float((P + 9))):
+            cntP += 1
+            print(f)
+            
+    print("cntP: ", cntP)
+    PP = (cntP / len(filesBrief)) * 100
+    print("PP: ", round(PP, 2))
+    print('---------')
+
+    return PP
+
+
 if __name__ == "__main__":
 
     whoami = __file__
@@ -118,18 +136,23 @@ if __name__ == "__main__":
     print("P: ", P)
     print('---------')
 
-    cnt90 = 0
-    for f in filesBrief:
-        #print(f)
-        if (f[2][-1] >= '90.0') and (f[2][-1] <= '99.0'):
-            cnt90 += 1
-            print(f)
-            
-    print("cnt90: ", cnt90)
-    P = (cnt90 / len(filesBrief)) * 100
-    print("P: ", P)
+    if P ==0:
+        P = showP(filesBrief, 90)
     print('---------')
 
+    if P ==0:
+        P = showP(filesBrief, 80)
+    print('---------')
+
+    if P ==0:
+        P = showP(filesBrief, 70)
+    print('---------')
+
+    if P ==0:
+        P = showP(filesBrief, 60)
+    print('---------')
+
+    input("Press <CR> key to continue...")
     # List Childern
     for f in filesBrief:
         if f[1] != "NC":
@@ -139,3 +162,19 @@ if __name__ == "__main__":
                 if len(i) > 0:
                     print("\t", i)
             print("---")
+
+    input("Press <CR> key to continue...")
+    # Empty Petri dish?
+    for entry in os.listdir(basePath):
+        if os.path.isfile(os.path.join(basePath, entry)):
+            print(entry)
+            foundFile= True
+
+    if foundFile:
+        ans = input("Delete files from Petri dish <Y/n>? ")
+        if ans in ["Y", "y"]:
+            for entry in os.listdir(basePath):
+                if os.path.isfile(os.path.join(basePath, entry)):
+                    os.remove(basePath + "/" + entry)
+
+    print("FINI.")

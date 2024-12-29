@@ -11,9 +11,9 @@ from subprocess import call
 
 
 
-
 if __name__ == "__main__":
 
+    processFound = False
     whoami = __file__
     testChar = "/"
     res = [i for i in range(len(whoami)) if whoami.startswith(testChar, i)]
@@ -23,7 +23,6 @@ if __name__ == "__main__":
     print("whoami: ", whoami)
     print("petriDishPath: ", petriDishPath)
     
-
     for entry in os.listdir(petriDishPath):
         if os.path.isfile(os.path.join(petriDishPath, entry)):
             # File found, so exit...
@@ -36,7 +35,7 @@ if __name__ == "__main__":
     # Put a copy of cell1DNA.py into the Petri dish
     shutil.copyfile("cell1DNA.py", "../cell1DNA.py")
 
-    print("Files placed in Petri dish...")
+    print("Cell files placed in Petri dish...")
 
     os.chdir(petriDishPath)
     print("chdir to: ", petriDishPath)
@@ -47,31 +46,14 @@ if __name__ == "__main__":
     call(callStr)
 
     print("Run started...")
-    """
-    Flawed, since processes started later will take 120 seconds
-    
-    end_time = start_time + 120 # ttl
-          
-    while time.time() < end_time:
-        print("----------")
-        current_time = datetime.datetime.now()
-        print(current_time)
-        time.sleep(10)
-
-    print("Cuurent run should have completed...")
-    """
-    for process in psutil.process_iter(['pid', 'name', 'cmdline']):
-        #print(process.info)
-        #if process.info['name'] == 'python3' or 'python3' in process.info.get('cmdline', []):
-        if process.info['name'] == 'python3':
-            #print("x ", process.info)
-            #print("t ", type(process.info))
-            if "cell" in process.info["cmdline"][1]:
-                #print("if cell ", process.info)
-                processFound = True
-    print("----------")
     print(datetime.datetime.now())
+    print("----------")
 
+    for process in psutil.process_iter(['pid', 'name', 'cmdline']):
+        if process.info['name'] == 'python3':
+            if "cell" in process.info["cmdline"][1]:
+                processFound = True
+    
     while processFound:
         print("-----: ", datetime.datetime.now())
         for process in psutil.process_iter(['pid', 'name', 'cmdline']):
@@ -83,8 +65,5 @@ if __name__ == "__main__":
                     processFound = False
         if processFound:
             time.sleep(10)
-    print("End. ", datetime.datetime.now())
 
-        
-        
-    
+    print("Run end at: ", datetime.datetime.now())
