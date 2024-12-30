@@ -25,7 +25,9 @@ class Cell:
         basePath = '',
         baseFile = '',
         parent = '',
-        dnaFile = ''
+        dnaFile = '',
+        dnaModule = '',
+        myChildren = []
         ):
         
         self.population = population
@@ -33,6 +35,8 @@ class Cell:
         self.baseFile = self.setBaseFile(__file__)
         self.parent = parent
         self.dnaFile = dnaFile
+        self.dnaModule = dnaModule
+        self.myChildren = myChildren
 
     def setBasePath(self, f):
         testChar = "/"
@@ -48,7 +52,7 @@ class Cell:
         return baseFile
 
     def __reduce__(self):
-        return (self.__class__, (self.population, self.basePath, self.baseFile, self.parent, self.dnaFile))
+        return (self.__class__, (self.population, self.basePath, self.baseFile, self.parent, self.dnaFile, self.dnaModule, self.myChildren))
 
     def printAll(self):
         print("population: ", self.population)
@@ -56,6 +60,13 @@ class Cell:
         print("baseFile: ", self.baseFile)
         print("parent: ", self.parent)
         print("dnaFile: ", self.dnaFile)
+        print("dnaModule: ", self.dnaModule)
+        if len(self.myChildren) > 0:
+            print("myChildren:")
+            for c in self.myChildren:
+                print(c)
+        else:
+            print("No Children.")
 
     def setPopulation(self, stopReplication):
         if dna.stopReplication == 0:
@@ -73,12 +84,12 @@ class Cell:
                     random_coin = random.randint(0, 1)
                     if random_coin == 1:
                         print("Won multiple of 100 - 50/50 coin toss, Replicate. ", random_coin)
-                        replicate(self.baseFile, self.dnaFile, foodObj)
+                        replicate(self, foodObj)
                     else:
                         print("Lost multiple of 100 - 50/50 coin toss, no replication. ", random_coin)
                 else:
                     print("Replicating randomly at: ", random_int)
-                    replicate(self.baseFile, self.dnaFile, foodObj)
+                    replicate(self, foodObj)
         else:
             print("Max Population (-5) Exceeded, no further replications: " + str(self.population))
 
@@ -118,6 +129,35 @@ class Cell:
 
         return mTimeStart
 
+
+    def checkOverpopulation(self, MAXPOP):
+        #global myChildren
+        
+        self.population = len([f for f in os.listdir(self.basePath) if os.path.isfile(os.path.join(self.basePath, f))])
+        if self.population > MAXPOP:
+            for c in self.myChildren:
+                print(c)
+                writeLog("#" + c[0] + "," + c[1])
+
+            sys.exit("Max Population Exceeded: " + str(self.population))
+
+    def setDNA(self):
+        if self.baseFile == "cell1Body.py": # First cell -- rewrite list file
+            self.parent = "cell1Body.py"
+            self.dnaFile = "cell1DNA.py"
+            self.dnaModule = "cell1DNA"
+
+            fileEntry = "1" + ",cell1Body.py" + ",cell1Body.py," + self.dnaFile + "\n"
+
+            filer = open(fList, "w")
+            filer.writelines(str(fileEntry))
+            filer.close()
+        else:
+            self.parent, lastFile, lastDNAFile = getLastFile(self.baseFile)
+        
+            fileNum = getFileNumber(self.baseFile)
+            self.dnaFile = "cell" + str(fileNum) + "DNA.py"
+            self.dnaModule = "cell" + str(fileNum) + "DNA"
             
 
 def getFileNumber(file):
@@ -295,27 +335,24 @@ def mutateWhichFile(newDNA, newValue, dnaPart):
     return
 
 
-def replicate(baseFile, dnaFile, foodObj):
-    global myChildren
+def replicate(thisCell, foodObj):
+    #global myChildren
     
     print("-----")
     print("replicate:")
 
-    parent, lastFile, lastDNA = getLastFile(baseFile)
-    newFile, newDNA = setNextFile(baseFile, lastFile, lastDNA)
+    thisCell.parent, lastFile, lastDNA = getLastFile(thisCell.baseFile)
+    newFile, newDNA = setNextFile(thisCell.baseFile, lastFile, lastDNA)
 
-    print("baseFile: ", baseFile)
-    print("dnaFile: ", dnaFile)
-    print("parent: ", parent)
-    print("lastFile: ", lastFile)
-    print("lastDNA: ", lastDNA)
+    print("thisCell:")
+    thisCell.printAll()
     print("foodObj: ")
     foodObj.printAll()
 
     print("B4COPY newFile: ", newFile)
     print("B4COPY newDNA: ", newDNA)
 
-    myChildren.append((newFile, newDNA))
+    thisCell.myChildren.append((newFile, newDNA))
         
     # Create file (replicant)
     shutil.copyfile(lastFile, newFile)
@@ -346,40 +383,39 @@ def replicate(baseFile, dnaFile, foodObj):
 
 
 if __name__ == "__main__":
-
-    #loopCnt = 1
-    myChildren = []
         
     start_time = time.time()
     thisCell = Cell()
 
-    print("--- START CELL INSTANCE ---")
+    print("--- START __main__ CELL INSTANCE ---")
 
     thisCell.printAll()
 
+    thisCell.setDNA()
+
     # Determine and import appropriate DNA module
     #
-    if thisCell.baseFile == "cell1Body.py": # First cell -- rewrite list file
-        thisCell.parent = "cell1Body.py"
-        thisCell.dnaFile = "cell1DNA.py"
-        dnaModule = "cell1DNA"
-
-        fileEntry = "1" + ",cell1Body.py" + ",cell1Body.py," + thisCell.dnaFile + "\n"
-
-        filer = open(fList, "w")
-        filer.writelines(str(fileEntry))
-        filer.close()
-    else:
-        thisCell.parent, lastFile, lastDNAFile = getLastFile(thisCell.baseFile)
-        #dnaModule = dnaFile[:-3] # Had issues with sequential file access
-        fileNum = getFileNumber(thisCell.baseFile)
-        thisCell.dnaFile = "cell" + str(fileNum) + "DNA.py"
-        dnaModule = "cell" + str(fileNum) + "DNA"
+    #if thisCell.baseFile == "cell1Body.py": # First cell -- rewrite list file
+    #    thisCell.parent = "cell1Body.py"
+    #    thisCell.dnaFile = "cell1DNA.py"
+    #    dnaModule = "cell1DNA"
+    #
+    #    fileEntry = "1" + ",cell1Body.py" + ",cell1Body.py," + thisCell.dnaFile + "\n"
+    #
+    #    filer = open(fList, "w")
+    #    filer.writelines(str(fileEntry))
+    #    filer.close()
+    #else:
+    #    thisCell.parent, lastFile, lastDNAFile = getLastFile(thisCell.baseFile)
+    #    #dnaModule = dnaFile[:-3] # Had issues with sequential file access
+    #    fileNum = getFileNumber(thisCell.baseFile)
+    #    thisCell.dnaFile = "cell" + str(fileNum) + "DNA.py"
+    #    dnaModule = "cell" + str(fileNum) + "DNA"
         
     print("---")
     thisCell.printAll()
 
-    dna = importlib.import_module(dnaModule)
+    dna = importlib.import_module(thisCell.dnaModule)
     
     # cellnDNA.py modified time
     mTimeStart = os.path.getmtime(thisCell.dnaFile)
@@ -388,7 +424,7 @@ if __name__ == "__main__":
     
     foodObj = dna.Food()
     end_time = start_time + dna.ttl
-          
+
     while time.time() < end_time:
         print("----------TOL")
 
@@ -418,17 +454,9 @@ if __name__ == "__main__":
 
         foodObj.loopCnt += 1
 
-        # Over population?
-        #
-        thisCell.population = len([f for f in os.listdir(thisCell.basePath) if os.path.isfile(os.path.join(thisCell.basePath, f))])
-        if thisCell.population > dna.MAXPOP:
-            for c in myChildren:
-                print(c)
-                writeLog("#" + c[0] + "," + c[1])
-
-            sys.exit("Max Population Exceeded: " + str(thisCell.population))
-
+        thisCell.checkOverpopulation(dna.MAXPOP)
+ 
     # Write children to log file
-    for c in myChildren:
+    for c in thisCell.myChildren:
         print(c)
         writeLog("#" + c[0] + "," + c[1])
