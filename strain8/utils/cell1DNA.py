@@ -5,13 +5,14 @@ import os
 import pickle
 
 
+
 class Food:
     # We'll see if this works better or not...
     def __init__(
         self,
         #/WHICHFILE
         whichFile = 1,
-        loopCnt = 0,
+        loopCnt = 1,
         thisFood = 0,
         isPrime = False,
         runningP = 0,
@@ -27,7 +28,7 @@ class Food:
 
     # How instances of the class are serialized and deserialized (pickles)
     def __reduce__(self):
-        return (self.__class__, (self.loopCnt, self.thisFood, self.isPrime, self.runningP, self.isPrimeTotal))
+        return (self.__class__, (self.whichFile, self.loopCnt, self.thisFood, self.isPrime, self.runningP, self.isPrimeTotal))
 
     def printAll(self):
         print('whichFile: ', self.whichFile)
@@ -37,9 +38,9 @@ class Food:
         print('runningP: ', round(self.runningP, 2))
         print('isPrimeTotal: ', self.isPrimeTotal)
 
-    def metabolize(self, loopCnt):
+    def metabolize(self):
 
-        self.loopCnt = loopCnt
+        #self.loopCnt = loopCnt
 
         print("Curent food source, whichFile: ", self.whichFile)
         self.changeFoodSource()

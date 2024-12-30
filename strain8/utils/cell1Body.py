@@ -17,6 +17,109 @@ fList = "txt/fileList.txt"
 myChildren = []
 
 
+class Cell:
+
+    def __init__(
+        self,
+        population = 0,
+        basePath = '',
+        baseFile = '',
+        parent = '',
+        dnaFile = ''
+        ):
+        
+        self.population = population
+        self.basePath = self.setBasePath(__file__)
+        self.baseFile = self.setBaseFile(__file__)
+        self.parent = parent
+        self.dnaFile = dnaFile
+
+    def setBasePath(self, f):
+        testChar = "/"
+        res = [i for i in range(len(f)) if f.startswith(testChar, i)]
+        basePath = f[:res[-1]]
+        return basePath
+
+    def setBaseFile(self, f):
+        testChar = "/"
+        res = [i for i in range(len(f)) if f.startswith(testChar, i)]
+        baseFile = f[res[-1]:]
+        baseFile = baseFile[1:]
+        return baseFile
+
+    def __reduce__(self):
+        return (self.__class__, (self.population, self.basePath, self.baseFile, self.parent, self.dnaFile))
+
+    def printAll(self):
+        print("population: ", self.population)
+        print("basePath: ", self.basePath)
+        print("baseFile: ", self.baseFile)
+        print("parent: ", self.parent)
+        print("dnaFile: ", self.dnaFile)
+
+    def setPopulation(self, stopReplication):
+        if dna.stopReplication == 0:
+            self.population = 0
+        else:
+            self.population = len([f for f in os.listdir(self.basePath) if os.path.isfile(os.path.join(self.basePath, f))])
+
+    def toReplicate(self, MAXPOP, foodObj):
+        if self.population < (MAXPOP - 5):        
+            # Trying self-replication (typical max loop count is 120)
+            random_int = random.randint(1, 120)
+            # With sleepTime = 0 many more loops
+            if (random_int == foodObj.loopCnt) or (foodObj.loopCnt % 25 == 0): #(loopCnt == 100): # One free pass at 100
+                if (foodObj.loopCnt % 25 == 0): #(loopCnt == 100): # Reduce odds with "coin flip"
+                    random_coin = random.randint(0, 1)
+                    if random_coin == 1:
+                        print("Won multiple of 100 - 50/50 coin toss, Replicate. ", random_coin)
+                        replicate(self.baseFile, self.dnaFile, foodObj)
+                    else:
+                        print("Lost multiple of 100 - 50/50 coin toss, no replication. ", random_coin)
+                else:
+                    print("Replicating randomly at: ", random_int)
+                    replicate(self.baseFile, self.dnaFile, foodObj)
+        else:
+            print("Max Population (-5) Exceeded, no further replications: " + str(self.population))
+
+    def toSelfReplicate(self, foodObj, starvingCheck, mTimeStart):
+        if (foodObj.loopCnt % starvingCheck == 0) and (foodObj.runningP < 100.0):
+            print("Let's attempt to mutate starvingCheck...: ", starvingCheck)
+            newValue = starvingCheck - 5
+            if newValue <= 5: # Divide by zero check
+                newValue = 5
+            
+            mutateWhichFile(thisCell.dnaFile, newValue, "STARVINGCHECK")
+            
+        mTimeNow = os.path.getmtime(thisCell.dnaFile)
+        
+        if mTimeStart < mTimeNow:
+            print("!!! *** Mutation Detected: Start time < time now")
+            #importlib.reload(cellFunction) # For some unkonwn reason was throwing an error
+            #print("*** dna: ", dna)
+            #print(sys.modules)
+            importlib.reload(dna)
+        
+            # Hack
+            #del sys.modules[dna] # This used to work when reload did not???
+            ##dna = importlib.import_module(dnaModule)
+
+            # Reset possibily mutated var's
+            #sleepTime = dna.sleepTime
+            #ttl       = dna.ttl
+            #starvingCheck = dna.starvingCheck
+            
+            print("!!! *** Re-imported cellFunction and reset starvingCheck variable to:")
+            #print("   local starvingCheck: ", starvingCheck)
+            #print("   dna starvingCheck: ", dna.starvingCheck)
+            mTimeStart = mTimeNow
+        else:
+            print("!!! *** No mutation detected.")
+
+        return mTimeStart
+
+            
+
 def getFileNumber(file):
 
     bx = [i for i in range(len(file)) if file.startswith("B", i)]
@@ -244,175 +347,86 @@ def replicate(baseFile, dnaFile, foodObj):
 
 if __name__ == "__main__":
 
-    
-
-    whoami = __file__
-   
-    currentNum = 0
-    loopCnt = 1
+    #loopCnt = 1
     myChildren = []
-    
-    #basePath = "/home/gary/src/petri_dish/strain3"
-    testChar = "/"
-    res = [i for i in range(len(whoami)) if whoami.startswith(testChar, i)]
-    
-    basePath = whoami[:res[-1]]
-    baseFile = whoami[res[-1]:]
-    baseFile = baseFile[1:]
-    
+        
     start_time = time.time()
+    thisCell = Cell()
 
     print("--- START CELL INSTANCE ---")
-    print("whoami: ", whoami)
-    print("basePath: ", basePath)
-    print("baseFile: ", baseFile)
+
+    thisCell.printAll()
 
     # Determine and import appropriate DNA module
     #
-    if "cell1Body.py" in whoami: # First cell -- rewrite list file
-        parent = "cell1Body.py"
-        dnaFile = "cell1DNA.py"
+    if thisCell.baseFile == "cell1Body.py": # First cell -- rewrite list file
+        thisCell.parent = "cell1Body.py"
+        thisCell.dnaFile = "cell1DNA.py"
         dnaModule = "cell1DNA"
 
-        fileEntry = "1" + ",cell1Body.py" + ",cell1Body.py," + dnaFile + "\n"
+        fileEntry = "1" + ",cell1Body.py" + ",cell1Body.py," + thisCell.dnaFile + "\n"
 
         filer = open(fList, "w")
         filer.writelines(str(fileEntry))
         filer.close()
     else:
-        parent, lastFile, lastDNAFile = getLastFile(baseFile)
+        thisCell.parent, lastFile, lastDNAFile = getLastFile(thisCell.baseFile)
         #dnaModule = dnaFile[:-3] # Had issues with sequential file access
-        fileNum = getFileNumber(baseFile)
-        dnaFile = "cell" + str(fileNum) + "DNA.py"
+        fileNum = getFileNumber(thisCell.baseFile)
+        thisCell.dnaFile = "cell" + str(fileNum) + "DNA.py"
         dnaModule = "cell" + str(fileNum) + "DNA"
         
-    print("dnaFile: ", dnaFile)
-    print("dnaModule: ", dnaModule)
-    print("parent: ", parent)
+    print("---")
+    thisCell.printAll()
 
     dna = importlib.import_module(dnaModule)
     
     # cellnDNA.py modified time
-    mTimeStart = os.path.getmtime(dnaFile)
-    print("{} modified time: {}".format(dnaFile, mTimeStart))
+    mTimeStart = os.path.getmtime(thisCell.dnaFile)
+    print("{} Start modified time: {}".format(thisCell.dnaFile, mTimeStart))
     print("----------")
     
-    # Starting point
-    foodObj         = dna.Food()
-    ttl             = dna.ttl
-    MAXPOP          = dna.MAXPOP
-    stopReplication = dna.stopReplication
-    sleepTime       = dna.sleepTime
-    starvingCheck   = dna.starvingCheck
-    isPrimeTotal    = foodObj.isPrimeTotal
-    
-    end_time = start_time + ttl
+    foodObj = dna.Food()
+    end_time = start_time + dna.ttl
           
     while time.time() < end_time:
-        print("----------")
+        print("----------TOL")
 
-        # Replicate (or attempt to) as per stopReplication and if within file number limit
-        #
-        if stopReplication == 0:
-            population = 0
-        else:
-            population = len([f for f in os.listdir(basePath) if os.path.isfile(os.path.join(basePath, f))])
-            
-        if population < (MAXPOP - 5):        
-            # Trying self-replication (typical max loop count is 120)
-            random_int = random.randint(1, 120)
-            # With sleepTime = 0 many more loops
-            if (random_int == loopCnt) or (loopCnt % 25 == 0): #(loopCnt == 100): # One free pass at 100
-                if (loopCnt % 25 == 0): #(loopCnt == 100): # Reduce odds with "coin flip"
-                    random_coin = random.randint(0, 1)
-                    if random_coin == 1:
-                        print("Won multiple of 100 - 50/50 coin toss, Replicate. ", random_coin)
-                        replicate(baseFile, dnaFile, foodObj)
-                    else:
-                        print("Lost multiple of 100 - 50/50 coin toss, no replication. ", random_coin)
-                else:
-                    print("Replicating randomly at: ", random_int)
-                    replicate(baseFile, dnaFile, foodObj)
-        else:
-            print("Max Population (-5) Exceeded, no further replications: " + str(population))
-
-        # Tring different methods to update/alter code
-        # Mutated? Has the DNA file timestamp changed?
-        # In other words: Was the DNA file mutated while running?
-        # This kind-of works, but is unreliable and there are possible
-        # side-effects and is not always guaranteed.
-        #
-        #if (loopCnt % 25 == 0) and (foodObj.runningP < 100.0):    
-        #
-
+        thisCell.setPopulation(dna.stopReplication)
+        thisCell.toReplicate(dna.MAXPOP, foodObj)
+        
         print("dna.starvingCheck: ", dna.starvingCheck)
-        print("local starvingCheck: ", starvingCheck)
+        thisCell.toSelfReplicate(foodObj, dna.starvingCheck, mTimeStart)        
+        print("After self replicate: dna starvingCheck: ", dna.starvingCheck)
         
-        if (loopCnt % starvingCheck == 0) and (foodObj.runningP < 100.0):
-            print("Let's attempt to mutate starvingCheck...: ", starvingCheck)
-            newValue = starvingCheck - 5
-            if newValue <= 5: # Divide by zero check
-                newValue = 5
-            
-            mutateWhichFile(dnaFile, newValue, "STARVINGCHECK")
-            
-        mTimeNow = os.path.getmtime(dnaFile)
-        
-        if mTimeStart < mTimeNow:
-            print("!!! *** Mutation Detected: Start time < time now")
-            #importlib.reload(cellFunction) # For some unkonwn reason was throwing an error
-            #print("*** dna: ", dna)
-            #print(sys.modules)
-            importlib.reload(dna)
-        
-            # Hack
-            #del sys.modules[dna] # This used to work when reload did not???
-            ##dna = importlib.import_module(dnaModule)
-
-            # Reset possibily mutated var's
-            #sleepTime = dna.sleepTime
-            #ttl       = dna.ttl
-            starvingCheck = dna.starvingCheck
-            
-            print("!!! *** Re-imported cellFunction and reset starvingCheck variable to:")
-            print("   local starvingCheck: ", starvingCheck)
-            print("   dna starvingCheck: ", dna.starvingCheck)
-            mTimeStart = mTimeNow
-        else:
-            print("!!! *** No mutation detected.")
-        
-        # Principal cell functions
-        #
-        # Currently: metabolize via Food class
-        #
         foodObj.printAll()
         print('---')
-        foodObj.metabolize(loopCnt)
+        foodObj.metabolize()
         print('---')
         foodObj.printAll()
         print('---')
-        
+        thisCell.printAll()
         print('Running: parent: {}, ttl: {}, baseFile: {}, sleepTime: {}, DNA: {}, loopCnt: {}, thisFood: {}, isPrime: {}, runningP: {}'.format(
-            parent, ttl, baseFile, sleepTime, dnaFile, loopCnt, foodObj.thisFood, foodObj.isPrime, round(foodObj.runningP, 2)))
+            thisCell.parent, dna.ttl, thisCell.baseFile, dna.sleepTime, thisCell.dnaFile, foodObj.loopCnt, foodObj.thisFood, foodObj.isPrime, round(foodObj.runningP, 2)))
 
         # Write to log file
         #  parent, TTL, baseFile, sleepTime, dnaFile, loopCnt, foodObj.thisFood, foodObj.isPrime
-        writeLog(parent + ',' + str(ttl) + ',' + baseFile + ',' + str(sleepTime) + ',' + str(dnaFile) + ',' +
-                 str(loopCnt) + ',' + str(foodObj.thisFood) + ',' + str(foodObj.isPrime) + ',' + str(round(foodObj.runningP, 2)) + '\n')
+        writeLog(thisCell.parent + ',' + str(dna.ttl) + ',' + thisCell.baseFile + ',' + str(dna.sleepTime) + ',' + str(thisCell.dnaFile) + ',' +
+                 str(foodObj.loopCnt) + ',' + str(foodObj.thisFood) + ',' + str(foodObj.isPrime) + ',' + str(round(foodObj.runningP, 2)) + '\n')
 
-        time.sleep(sleepTime) # Small delay to reduce excessive CPU usage
+        time.sleep(dna.sleepTime) # Small delay to reduce excessive CPU usage
 
-        loopCnt += 1
+        foodObj.loopCnt += 1
 
         # Over population?
         #
-        population = len([f for f in os.listdir(basePath) if os.path.isfile(os.path.join(basePath, f))])
-        if population > MAXPOP:
+        thisCell.population = len([f for f in os.listdir(thisCell.basePath) if os.path.isfile(os.path.join(thisCell.basePath, f))])
+        if thisCell.population > dna.MAXPOP:
             for c in myChildren:
                 print(c)
                 writeLog("#" + c[0] + "," + c[1])
 
-            sys.exit("Max Population Exceeded: " + str(population))
+            sys.exit("Max Population Exceeded: " + str(thisCell.population))
 
     # Write children to log file
     for c in myChildren:
