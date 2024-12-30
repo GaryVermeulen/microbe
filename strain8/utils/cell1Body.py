@@ -27,6 +27,7 @@ class Cell:
         parent = '',
         dnaFile = '',
         dnaModule = '',
+        mTimeStart = '',
         myChildren = []
         ):
         
@@ -36,6 +37,7 @@ class Cell:
         self.parent = parent
         self.dnaFile = dnaFile
         self.dnaModule = dnaModule
+        self.mTimeStart = mTimeStart
         self.myChildren = myChildren
 
     def setBasePath(self, f):
@@ -52,7 +54,7 @@ class Cell:
         return baseFile
 
     def __reduce__(self):
-        return (self.__class__, (self.population, self.basePath, self.baseFile, self.parent, self.dnaFile, self.dnaModule, self.myChildren))
+        return (self.__class__, (self.population, self.basePath, self.baseFile, self.parent, self.dnaFile, self.dnaModule, self.mTimeStart, self.myChildren))
 
     def printAll(self):
         print("population: ", self.population)
@@ -61,6 +63,7 @@ class Cell:
         print("parent: ", self.parent)
         print("dnaFile: ", self.dnaFile)
         print("dnaModule: ", self.dnaModule)
+        print("mTimeStart: ", self.mTimeStart)
         if len(self.myChildren) > 0:
             print("myChildren:")
             for c in self.myChildren:
@@ -93,7 +96,7 @@ class Cell:
         else:
             print("Max Population (-5) Exceeded, no further replications: " + str(self.population))
 
-    def toSelfReplicate(self, foodObj, starvingCheck, mTimeStart):
+    def toSelfMutate(self, foodObj, starvingCheck):
         if (foodObj.loopCnt % starvingCheck == 0) and (foodObj.runningP < 100.0):
             print("Let's attempt to mutate starvingCheck...: ", starvingCheck)
             newValue = starvingCheck - 5
@@ -104,7 +107,7 @@ class Cell:
             
         mTimeNow = os.path.getmtime(thisCell.dnaFile)
         
-        if mTimeStart < mTimeNow:
+        if self.mTimeStart < mTimeNow:
             print("!!! *** Mutation Detected: Start time < time now")
             #importlib.reload(cellFunction) # For some unkonwn reason was throwing an error
             #print("*** dna: ", dna)
@@ -123,11 +126,11 @@ class Cell:
             print("!!! *** Re-imported cellFunction and reset starvingCheck variable to:")
             #print("   local starvingCheck: ", starvingCheck)
             #print("   dna starvingCheck: ", dna.starvingCheck)
-            mTimeStart = mTimeNow
+            self.mTimeStart = mTimeNow
         else:
             print("!!! *** No mutation detected.")
 
-        return mTimeStart
+        return
 
 
     def checkOverpopulation(self, MAXPOP):
@@ -383,44 +386,16 @@ def replicate(thisCell, foodObj):
 
 
 if __name__ == "__main__":
-        
-    start_time = time.time()
-    thisCell = Cell()
 
     print("--- START __main__ CELL INSTANCE ---")
-
-    thisCell.printAll()
-
+    start_time = time.time()
+    thisCell = Cell()
     thisCell.setDNA()
-
-    # Determine and import appropriate DNA module
-    #
-    #if thisCell.baseFile == "cell1Body.py": # First cell -- rewrite list file
-    #    thisCell.parent = "cell1Body.py"
-    #    thisCell.dnaFile = "cell1DNA.py"
-    #    dnaModule = "cell1DNA"
-    #
-    #    fileEntry = "1" + ",cell1Body.py" + ",cell1Body.py," + thisCell.dnaFile + "\n"
-    #
-    #    filer = open(fList, "w")
-    #    filer.writelines(str(fileEntry))
-    #    filer.close()
-    #else:
-    #    thisCell.parent, lastFile, lastDNAFile = getLastFile(thisCell.baseFile)
-    #    #dnaModule = dnaFile[:-3] # Had issues with sequential file access
-    #    fileNum = getFileNumber(thisCell.baseFile)
-    #    thisCell.dnaFile = "cell" + str(fileNum) + "DNA.py"
-    #    dnaModule = "cell" + str(fileNum) + "DNA"
-        
-    print("---")
-    thisCell.printAll()
 
     dna = importlib.import_module(thisCell.dnaModule)
     
-    # cellnDNA.py modified time
-    mTimeStart = os.path.getmtime(thisCell.dnaFile)
-    print("{} Start modified time: {}".format(thisCell.dnaFile, mTimeStart))
-    print("----------")
+    # Capture cellnDNA.py modified time
+    thisCell.mTimeStart = os.path.getmtime(thisCell.dnaFile)
     
     foodObj = dna.Food()
     end_time = start_time + dna.ttl
@@ -432,11 +407,9 @@ if __name__ == "__main__":
         thisCell.toReplicate(dna.MAXPOP, foodObj)
         
         print("dna.starvingCheck: ", dna.starvingCheck)
-        thisCell.toSelfReplicate(foodObj, dna.starvingCheck, mTimeStart)        
-        print("After self replicate: dna starvingCheck: ", dna.starvingCheck)
+        thisCell.toSelfMutate(foodObj, dna.starvingCheck)        
+        print("After self mutate: dna starvingCheck: ", dna.starvingCheck)
         
-        foodObj.printAll()
-        print('---')
         foodObj.metabolize()
         print('---')
         foodObj.printAll()
