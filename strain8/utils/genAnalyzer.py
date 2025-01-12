@@ -154,16 +154,17 @@ def analyzeRun():
         P = showP(filesBrief, 60)
     print('---------')
 
-    input("Press <CR> key to continue...")
-    # List Childern
-    for f in filesBrief:
-        if f[1] != "NC":
-            print(f[0])
-            tmpLst = f[1].split("#")
-            for i in tmpLst:
-                if len(i) > 0:
-                    print("\t", i)
-            print("---")
+    ans = input("List children <Y/n>? ")
+    if ans in ["Y", "y"]:
+        # List Childern
+        for f in filesBrief:
+            if f[1] != "NC":
+                print(f[0])
+                tmpLst = f[1].split("#")
+                for i in tmpLst:
+                    if len(i) > 0:
+                        print("\t", i)
+                print("---")
 
     input("Press <CR> key to continue...")
     # Empty Petri dish?

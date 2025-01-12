@@ -37,7 +37,7 @@ class Food:
         print('isPrime: ', self.isPrime)
         print('runningP: ', round(self.runningP, 2))
         print('isPrimeTotal: ', self.isPrimeTotal)
-
+        
     def metabolize(self):
 
         #self.loopCnt = loopCnt
@@ -112,7 +112,7 @@ def cellFunction(newNum):
 
 # Prime number function
 #
-def isNumPrime1(num):
+def isNumPrime(num):
     
     if num > 1:
         for i in range(2, (num//2)+1):
@@ -157,6 +157,6 @@ def eatFood(loopCnt, whichFile):
 
     dataFood = loadData(whichFile)
     thisFood = dataFood[loopCnt]
-    isPrime = isNumPrime1(thisFood)
+    isPrime = isNumPrime(thisFood)
     
     return thisFood, isPrime
