@@ -6,4 +6,6 @@ Cellular emulation/modeling.
 
   strain7 - Introduces a goal (problem solving)
 
-  strain8 - Refinements and enhancements (WIP)
+  strain8 - Refinements and enhancements
+
+  strain9 - Change input and selection (WIP)
