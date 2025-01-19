@@ -27,6 +27,7 @@ class Cell:
         dnaFile = '',
         dnaModule = '',
         mTimeStart = '',
+        loopCnt = 1,
         myChildren = [],
         foodList = [],
         windowSize = 5,
@@ -41,6 +42,7 @@ class Cell:
         self.dnaFile = dnaFile
         self.dnaModule = dnaModule
         self.mTimeStart = mTimeStart
+        self.loopCnt = loopCnt
         self.myChildren = myChildren
         self.foodList = foodList
         self.windowSize = windowSize
@@ -63,8 +65,8 @@ class Cell:
     def __reduce__(self):
         return (self.__class__, (self.population, self.basePath, self.baseFile,
                                  self.parent, self.dnaFile, self.dnaModule, self.mTimeStart,
-                                 self.myChildren, self.foodList, self.windowSize, self.windowList,
-                                 self.fatAndHappy))
+                                 self.loopCnt, self.myChildren, self.foodList,
+                                 self.windowSize, self.windowList, self.fatAndHappy))
 
     def printAll(self):
         print("population: ", self.population)
@@ -74,6 +76,7 @@ class Cell:
         print("dnaFile: ", self.dnaFile)
         print("dnaModule: ", self.dnaModule)
         print("mTimeStart: ", self.mTimeStart)
+        print("loopCnt: ", self.loopCnt)
         if len(self.myChildren) > 0:
             print("myChildren:")
             for c in self.myChildren:
@@ -96,8 +99,8 @@ class Cell:
             
             random_int = random.randint(1, 120)
             
-            if (random_int == foodObj.loopCnt) or (foodObj.loopCnt % 25 == 0): #(loopCnt == 100): # One free pass at 100
-                if (foodObj.loopCnt % 25 == 0): #(loopCnt == 100): # Reduce odds with "coin flip"
+            if (random_int == self.loopCnt) or (self.loopCnt % 25 == 0): #(loopCnt == 100): # One free pass at 100
+                if (self.loopCnt % 25 == 0): #(loopCnt == 100): # Reduce odds with "coin flip"
                     random_coin = random.randint(0, 1)
                     if random_coin == 1:
                         print("Won multiple of 25 - 50/50 coin toss, Replicate. ", random_coin)
@@ -110,120 +113,57 @@ class Cell:
         else:
             print("Max Population (-5) Exceeded, no further replications: " + str(self.population))
 
-    def toSelfMutate(self, foodObj, starvingCheck, direction):
-        if (foodObj.loopCnt % starvingCheck == 0) and (foodObj.runningP < 100.0):
-            print("Let's attempt to mutate starvingCheck...: ", starvingCheck)
-            if direction == "DOWN":
-                newValue = starvingCheck - 5
-                if newValue <= 5: # Divide by zero check
-                    newValue = 5
-            elif direction == "UP":
-                newValue = starvingCheck + 5
-            
-            mutateDNAFile(thisCell.dnaFile, newValue, "STARVINGCHECK")
-            
-        mTimeNow = os.path.getmtime(thisCell.dnaFile)
-        
-        if self.mTimeStart < mTimeNow:
-            print("!!! *** Mutation Detected: Start time < time now")
-            #importlib.reload(cellFunction) # For some unkonwn reason was throwing an error
-            #print("*** dna: ", dna)
-            #print(sys.modules)
-            importlib.reload(dna)
-        
-            # Hack
-            #del sys.modules[dna] # This used to work when reload did not???
-            ##dna = importlib.import_module(dnaModule)
-
-            # Reset possibily mutated var's
-            #sleepTime = dna.sleepTime
-            #ttl       = dna.ttl
-            #starvingCheck = dna.starvingCheck
-            
-            print("!!! *** Re-imported cellFunction and reset starvingCheck variable to:")
-            #print("   local starvingCheck: ", starvingCheck)
-            #print("   dna starvingCheck: ", dna.starvingCheck)
-            self.mTimeStart = mTimeNow
-        else:
-            print("    *** No mutation detected.")
-
-        return
 
     def loopBody(self, dna, foodObj):
 
+        print("Top of loopBody, foodObj.printAll(): ")
+        foodObj.printAll()
+        print('---------')
         self.setPopulation(dna.stopReplication)
         self.toReplicate(dna.MAXPOP, foodObj)
 
         # What to do if fat-and-happy...?
         # Extend ttl, sleep more, starvingCheck less?
-        self.prosperityAdjustment(dna, foodObj)
+        self.prosperityCheck(dna, foodObj)
 
-        if self.fatAndHappy:
-            direction = "UP"
-        else:
-            direction = "DOWN"
-        
-        print("dna.starvingCheck: ", dna.starvingCheck, foodObj.whichFile)
-        self.toSelfMutate(foodObj, dna.starvingCheck, direction)
-        print("After new self mutate : ", dna.starvingCheck, foodObj.whichFile)
-        
-        foodObj.metabolize()
+        if not self.fatAndHappy:
+            print("NOT self.fatAndHappy: ", self.fatAndHappy)
+            foodObj.changeFoodSource(thisCell.loopCnt)
+                   
+        foodObj.metabolize(thisCell.loopCnt)
 
         self.foodList.append(foodObj.thisFood)
-
-        ## What to do if fat-and-happy...?
-        ## Extend ttl, sleep more, starvingCheck less?
-        #self.prosperityAdjustment(dna, foodObj)
-        
-        print('---')
+       
+        print('--- foodObj.printAll():')
         foodObj.printAll()
-        print('---')
+        print('--- thisCell.printAll():')
         self.printAll()
         print('Running: parent: {}, ttl: {}, baseFile: {}, sleepTime: {}, DNA: {}, loopCnt: {}, thisFood: {}, isPrime: {}, runningP: {}'.format(
-            self.parent, dna.ttl, self.baseFile, dna.sleepTime, self.dnaFile, foodObj.loopCnt, foodObj.thisFood, foodObj.isPrime, round(foodObj.runningP, 2)))
+            self.parent, dna.ttl, self.baseFile, dna.sleepTime, self.dnaFile, self.loopCnt, foodObj.thisFood, foodObj.isPrime, round(foodObj.runningP, 2)))
 
         # Write to log file
         #  parent, TTL, baseFile, sleepTime, dnaFile, loopCnt, foodObj.thisFood, foodObj.isPrime
         writeLog(str(self.parent) + ',' + str(dna.ttl) + ',' + self.baseFile + ',' + str(dna.sleepTime) + ',' + str(self.dnaFile) + ',' +
-                 str(foodObj.loopCnt) + ',' + str(foodObj.thisFood) + ',' + str(foodObj.isPrime) + ',' + str(round(foodObj.runningP, 2)) + '\n')
+                 str(self.loopCnt) + ',' + str(foodObj.thisFood) + ',' + str(foodObj.isPrime) + ',' + str(round(foodObj.runningP, 2)) + '\n')
 
         time.sleep(dna.sleepTime) # Small delay to reduce excessive CPU usage
 
-        foodObj.loopCnt += 1
+        self.loopCnt += 1
 
         self.checkOverpopulation(dna.MAXPOP)
 
-    def prosperityAdjustment(self, dna, foodObj):
+    def prosperityCheck(self, dna, foodObj):
 
-        fatAndHappy = True
+        self.fatAndHappy = True
         
-        print("prosperityAdjustment--start")
-        if len(self.foodList) < self.windowSize:
-            fatAndHappy = False
-            print("-----")
-        else:
+        if (self.loopCnt % foodObj.starvingCheck == 0) and (foodObj.runningP < 100.0):
             self.windowList = self.foodList[-5:]
-            print("windowLst: ", self.windowList)
+            #print("windowLst: ", self.windowList)
             for n in self.windowList:
                 if not dna.isNumPrime(n):
-                    #print("NP", n)
-                    fatAndHappy = False
-                    break
-            print(".....")
-
-        if fatAndHappy:
-            print("fatAndHappy = True")
-        else:
-            print("fatAndHappy = False")
-
-        if fatAndHappy and (foodObj.runningP == 100.0):
-            print("   Truly fat and happy.")
-            self.fatAndHappy = True
-        else:
-            self.fatAndHappy = False
-            
-            
-        print("prosperityAdjustment--end")
+                    self.fatAndHappy = False
+                    break             
+        return
 
     def checkOverpopulation(self, MAXPOP):
         
@@ -392,12 +332,12 @@ def mutateDNAFile(newDNA, newValue, dnaPart):
     found = False
     newFile = []
 
-    if dnaPart == "WHICHFILE":
+    if dnaPart == "foodFile":
         for i in range(len(file)):
-            if file[i].strip() == "#/WHICHFILE":
+            if file[i].strip() == "#/foodFile":
                 #print("FOUND: ", file[i])
                 newFile.append(file[i])
-                newFile.append("        whichFile = " + str(newValue) + ",")
+                newFile.append("        foodFile = " + str(newValue) + ",")
                 found = True
             else:
                 #print("NF: ", file[i])
@@ -428,9 +368,9 @@ def mutateDNAFile(newDNA, newValue, dnaPart):
     outFile.close()
     """
 
-    foodObj.whichFile = foodObj.setFoodFile(__file__)
+    foodObj.foodFile = foodObj.setFoodFile(__file__)
 
-    print("Reset foodObj.whichFile: ", foodObj.whichFile)
+    print("Reset foodObj.foodFile: ", foodObj.foodFile)
     
     return 
 
@@ -465,11 +405,11 @@ def replicate(thisCell, foodObj):
     New mutation to be based on the % of primes found...
     """
     #if foodObj.runningP < 100.0:
-        #if foodObj.whichFile == 6:
-        #    print("Attempted mutation failed: Cannot roll whichFood higher than: ", foodObj.whichFile)
+        #if foodObj.foodFile == 6:
+        #    print("Attempted mutation failed: Cannot roll whichFood higher than: ", foodObj.foodFile)
         #else:
-        #    newFileNum = int(foodObj.whichFile) + 1
-        #    mutateDNAFile(newDNA, newFileNum, "WHICHFILE")
+        #    newFileNum = int(foodObj.foodFile) + 1
+        #    mutateDNAFile(newDNA, newFileNum, "foodFile")
         #    print("Mutated: ", newFileNum)
      
     print("Starting replicated file: ", newFile)
@@ -495,12 +435,14 @@ if __name__ == "__main__":
     
     foodObj = dna.Food()
     end_time = start_time + dna.ttl
+    foodObj.printAll()
 
     while time.time() < end_time:
         print("----------TopOfLoop")
         thisCell.loopBody(dna, foodObj)
  
     # Write children to log file
+    print("Time to die...")
     for c in thisCell.myChildren:
         print(c)
         writeLog("#" + c[0] + "," + c[1])

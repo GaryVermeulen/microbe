@@ -10,25 +10,27 @@ class Food:
     # We'll see if this works better or not...
     def __init__(
         self,
-        #/WHICHFILE
-        whichFile = '',
-        loopCnt = 1,
+        #/foodFile
+        foodFile = '',
+        foodFileList = [],
         thisFood = 0,
         isPrime = False,
         runningP = 0,
-        isPrimeTotal = 0
+        isPrimeTotal = 0,
+        starvingCheck = 25
         ):
 
-        self.whichFile = self.setFoodFile(__file__)
-        self.loopCnt = loopCnt
+        self.foodFileList = foodFileList
+        self.foodFile = self.setFoodFile(__file__)
         self.thisFood = thisFood
         self.isPrime = isPrime
         self.runningP = runningP
         self.isPrimeTotal = isPrimeTotal
+        self.starvingCheck = starvingCheck
 
     # How instances of the class are serialized and deserialized (pickles)
     def __reduce__(self):
-        return (self.__class__, (self.whichFile, self.loopCnt, self.thisFood, self.isPrime, self.runningP, self.isPrimeTotal))
+        return (self.__class__, (self.foodFile, self.foddFileList, self.thisFood, self.isPrime, self.runningP, self.isPrimeTotal))
 
     def setFoodFile(self, f):
         testChar = "/"
@@ -40,47 +42,46 @@ class Food:
         print("numDataFiles: ",numDataFiles)
 
         random_int = random.randint(0, int(numDataFiles) - 1)
-
         foodFile = "dataFile" + str(random_int) + ".txt"
+        print("foodFile: ", foodFile)
+        print("foodFileList: ", self.foodFileList)
+
+        while foodFile in self.foodFileList:
+            random_int = random.randint(0, int(numDataFiles) - 1)
+            foodFile = "dataFile" + str(random_int) + ".txt"
 
         return foodFile
 
     def printAll(self):
-        print('whichFile: ', self.whichFile)
-        print('loopCnt: ', self.loopCnt)
+        print('foodFile: ', self.foodFile)
+        print('foodFileList: ', self.foodFileList)
         print('thisFood: ', self.thisFood)
         print('isPrime: ', self.isPrime)
         print('runningP: ', round(self.runningP, 2))
         print('isPrimeTotal: ', self.isPrimeTotal)
+        print('starvingCheck: ', self.starvingCheck)
         
-    def metabolize(self):
+    def metabolize(self, loopCnt):
 
-        #self.loopCnt = loopCnt
-
-        #print("Curent food source, whichFile: ", self.whichFile)
-        #self.changeFoodSource()
-
-        self.thisFood, self.isPrime = eatFood(self.loopCnt, self.whichFile)
+        self.thisFood, self.isPrime = eatFood(loopCnt, self.foodFile)
         
         if self.isPrime:
             self.isPrimeTotal += 1
-        self.runningP = (self.isPrimeTotal / self.loopCnt) * 100
+        self.runningP = (self.isPrimeTotal / loopCnt) * 100
         
         return
 
-    def changeFoodSource(self):
+    def changeFoodSource(self, loopCnt):
 
-        print("Change food source?")
+        print("Change food source--assumption that I am not truly fat-n-happy.")
+        print("foodFile: ", self.foodFile)
+        print("foodFileList: ", self.foodFileList)
+        self.foodFileList.append(self.foodFile)
+        
+        self.foodFile = self.setFoodFile(__file__)
 
-        #if (self.loopCnt % 25 == 0) and (self.runningP < 100.0):
-        if (self.loopCnt % starvingCheck == 0) and (self.runningP < 100.0):
-            if self.whichFile == 6:
-                print("Cannot roll whichFood higher than: ", self.whichFile)
-            else:
-                self.whichFile = self.whichFile + 1
-                print("Starving, rolled whichFile to: ", self.whichFile)
-        else:
-            print("Not yet...")
+        print("   foodFile: ", self.foodFile)
+        print("   foodFileList: ", self.foodFileList)
 
         return
 
@@ -113,8 +114,9 @@ stopReplication = 1
 # Typically 90 will solve
 MAXPOP = 90 # Maximum file (cell) population
 
+# Moved to class
 #/STARVINGCHECK
-starvingCheck = 25
+##starvingCheck = 25
 
 # Simple function now obsolete
 #
@@ -141,34 +143,11 @@ def isNumPrime(num):
 
 # Load data/food
 #
-def loadData(whichFile):
-    
-    """
-    if whichFile == 1:
-        file = 'pickles/dataFood1.p'
-    elif whichFile == 2:
-        file = 'pickles/dataFood2.p'
-    elif whichFile == 3:
-        file = 'pickles/dataFood3.p'
-    elif whichFile == 4:
-        file = 'pickles/dataFood4.p'
-    elif whichFile == 5:
-        file = 'pickles/dataFood5.p'
-    elif whichFile == 6:
-        file = 'pickles/dataFoodP.p'
-    else:
-        print("Invalid file selection. Defaulting to 1.")
-        file = 'pickles/dataFood1.p'
-        
-    # Get data/food
-    with open(file, 'rb') as f:
-        dataFood = pickle.load(f)
-    f.close()
-    """
+def loadData(foodFile):
 
     dataFood = []
 
-    with open("data/" + whichFile, "r") as f:
+    with open("data/" + foodFile, "r") as f:
         for line in f:
             dataFood.append(line.strip("\n"))
 
@@ -176,9 +155,9 @@ def loadData(whichFile):
 
 # Attempt to emulate consumption (eating)
 #
-def eatFood(loopCnt, whichFile):
+def eatFood(loopCnt, foodFile):
 
-    dataFood = loadData(whichFile)
+    dataFood = loadData(foodFile)
     thisFood = dataFood[loopCnt]
     isPrime = isNumPrime(thisFood)
     

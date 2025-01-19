@@ -32,7 +32,7 @@ def showP(filesBrief, P):
     print("cntP: ", cntP)
     PP = (cntP / len(filesBrief)) * 100
     print("PP: ", round(PP, 2))
-    print('---------')
+    print('----')
 
     return PP
 
@@ -123,7 +123,7 @@ def analyzeRun():
     #    print(f)
 
     print('---------')
-    #filesBrief.sort()
+    print("100:")
 
     # Sort by %
     filesBrief.sort(key = lambda x: x[-1][-1])
@@ -141,20 +141,24 @@ def analyzeRun():
     print("P: ", P)
     print('---------')
 
-    if P ==0:
-        P = showP(filesBrief, 90)
+    print("90: ")
+    P = showP(filesBrief, 90)
+    print(P)
     print('---------')
 
-    if P ==0:
-        P = showP(filesBrief, 80)
+    print("80: ")
+    P = showP(filesBrief, 80)
+    print(P)
     print('---------')
 
-    if P ==0:
-        P = showP(filesBrief, 70)
+    print("70: ")
+    P = showP(filesBrief, 70)
+    print(P)
     print('---------')
 
-    if P ==0:
-        P = showP(filesBrief, 60)
+    print("60:")
+    P = showP(filesBrief, 60)
+    print(P)
     print('---------')
 
     ans = input("List children <Y/n>? ")
