@@ -113,6 +113,7 @@ stopReplication = 1
 # Typically 30 will not solve
 # Typically 90 will solve
 MAXPOP = 90 # Maximum file (cell) population
+#MAXPOP = 20 # Maximum file (cell) population
 
 # Moved to class
 #/STARVINGCHECK
